@@ -1,18 +1,24 @@
 class Api::V1::UsersController < ApplicationController
+    include JwtAuthenticator
     def create
          user=User.new(user_params)
           p"=============new======"
           p params
           p"==================="
-      
+        p "user variable"
+        p user
+
         if user.save
           p"==============save====="
           p params
           p"==================="
-        render json: {status: 201, data: user}
-       else
-        render json: {status: 400,error: "users can't found"}
-       end
+          token = encode(user.id)
+          render json: {status: 201, data: {name: user.name, email: user.email, token: token}}
+        else
+          "error for user"
+          p user.errors.full_messages
+          render json: {status: 400,error: "user can't save and create"}
+        end
     end
     def update
       if user=User.find_by(id:params[:id])
@@ -28,7 +34,18 @@ class Api::V1::UsersController < ApplicationController
     end
     private
     def user_params
-      params.require(:user).permit(:name, :email, :password, :password_confirmation)
+      # params.require(:user).permit(:name, :email, :password, :password_confirmation)
+      # {
+      #   user: {
+      #     name: "test",
+      #     email: "test@test.com
+      #   }
+      # }
+      # {
+      #   name: "test",
+      #   email: "test@test.com
+      # }
+      params.permit(:name, :email, :password, :password_confirmation)
     end
     
 
