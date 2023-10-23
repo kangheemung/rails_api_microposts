@@ -14,11 +14,12 @@ gem 'puma', '~> 3.11'
 # Use Redis adapter to run Action Cable in production
 # gem 'redis', '~> 4.0'
 # Use ActiveModel has_secure_password
- gem 'bcrypt', '~> 3.1.7'
+gem 'bcrypt', '~> 3.1.7'
 gem 'activerecord-import'
 # Use ActiveStorage variant
 # gem 'mini_magick', '~> 4.8'
 gem "jwt"
+gem 'dotenv'
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
@@ -27,7 +28,7 @@ gem "jwt"
 gem 'bootsnap', '>= 1.1.0', require: false
 gem 'kaminari'#ページ数限定して表示するゲム
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
- gem 'rack-cors'
+gem 'rack-cors'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
