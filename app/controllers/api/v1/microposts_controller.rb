@@ -89,7 +89,7 @@ class Api::V1::MicropostsController < ApplicationController
           end
       end
       def destroy
-        user_id = authenticate_request(request) # Assign the value returned by authenticate_request to user_id
+           user_id = authenticate_request(request) # Assign the value returned by authenticate_request to user_id
         p"================"
         p user_id
         p"================"
