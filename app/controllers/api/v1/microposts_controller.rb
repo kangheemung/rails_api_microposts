@@ -1,5 +1,7 @@
 class Api::V1::MicropostsController < ApplicationController
   include JwtAuthenticator
+  before_action ->(request) { authenticate_request(request) }, only: [:create, :update, :destroy]
+
   def index
     #posts =Post.limit(100)#≤ =データ多い時
         #if posts.count > 0
@@ -17,7 +19,7 @@ class Api::V1::MicropostsController < ApplicationController
 
     micropost_data = []
     microposts.each do |micropost|
-      micropost_data << { title: micropost.title, body: micropost.body }
+      micropost_data << micropost.as_json(except: [:created_at, :updated_at])
     end
 
     render json: micropost_data
@@ -45,7 +47,6 @@ class Api::V1::MicropostsController < ApplicationController
       micropost = user.microposts.build(microposts_params)
     
       if micropost.save 
-        token = encode(user.id)
         render json: { status: 201, data: micropost, token: token }
       else
         render json: { status: 422, errors: micropost.errors.full_messages }
@@ -89,7 +90,7 @@ class Api::V1::MicropostsController < ApplicationController
           end
       end
       def destroy
-           user_id = authenticate_request(request) # Assign the value returned by authenticate_request to user_id
+        user_id = authenticate_request(request) # Assign the value returned by authenticate_request to user_id
         p"================"
         p user_id
         p"================"
