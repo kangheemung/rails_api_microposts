@@ -24,22 +24,54 @@ class Api::V1::MicropostsController < ApplicationController
   
     end
     def create
-      user = authenticate_request(request)
-      if user.nil?
+      user_id = authenticate_request(request) # Assign the value returned by authenticate_request to user_id
+      p"================"
+      p user_id
+      p"================"
+      if user_id.nil?
         render json: { status: 401, error: "Unauthorized" }
         return
       end
-  
+    
+      token = encode(user_id) # Use the correct user_id here
+    
+      user = User.find_by(id: user_id)
+      
+      if user.nil?
+        render json: { status: 404, error: "User not found" }
+        return
+      end
+    
       micropost = user.microposts.build(microposts_params)
-  
+    
       if micropost.save 
+        token = encode(user.id)
         render json: { status: 201, data: micropost, token: token }
       else
         render json: { status: 422, errors: micropost.errors.full_messages }
       end
     end
     
+    
+    
       def update
+        user_id = authenticate_request(request) # Assign the value returned by authenticate_request to user_id
+        p"================"
+        p user_id
+        p"================"
+        if user_id.nil?
+          render json: { status: 401, error: "Unauthorized" }
+          return
+        end
+      
+        token = encode(user_id) # Use the correct user_id here
+      
+        user = User.find_by(id: user_id)
+        
+        if user.nil?
+          render json: { status: 404, error: "User not found" }
+          return
+        end
           #p"====================="
           #p params
           #p"====================="
@@ -57,6 +89,23 @@ class Api::V1::MicropostsController < ApplicationController
           end
       end
       def destroy
+        user_id = authenticate_request(request) # Assign the value returned by authenticate_request to user_id
+        p"================"
+        p user_id
+        p"================"
+        if user_id.nil?
+          render json: { status: 401, error: "Unauthorized" }
+          return
+        end
+      
+        token = encode(user_id) # Use the correct user_id here
+      
+        user = User.find_by(id: user_id)
+        
+        if user.nil?
+          render json: { status: 404, error: "User not found" }
+          return
+        end
           p"====================="
           p params
           p"====================="
@@ -70,5 +119,6 @@ class Api::V1::MicropostsController < ApplicationController
     def microposts_params
       params.require(:micropost).permit(:title, :body, :user_id)
     end
+    
   end
   
