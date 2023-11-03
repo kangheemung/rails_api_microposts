@@ -16,7 +16,7 @@ module JwtAuthenticator
       token = extract_token_from_request(request)
     
       return nil unless token
-    
+      
       begin
         decoded_token = decode(token)
         user_id = decoded_token['user_id']

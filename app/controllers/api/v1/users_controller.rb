@@ -23,7 +23,7 @@ class Api::V1::UsersController < ApplicationController
        end
     end
     def update
-      if user=User.find_by(id:params[:id])
+      if user=User.find_by(id: params[:id])
         p"==============save====="
         p params
         p"==================="
@@ -46,7 +46,7 @@ class Api::V1::UsersController < ApplicationController
       # {
       #   name: "test",
       #   
-      params.permit(:name, :email, :password, :password_confirmation)
+      params.require(:user).permit(:name, :email, :password, :password_confirmation)
     end
     
 
