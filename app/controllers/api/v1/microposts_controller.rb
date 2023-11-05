@@ -1,10 +1,11 @@
 class Api::V1::MicropostsController < ApplicationController
   include JwtAuthenticator
+  skip_before_action :verify_authenticity_token
   before_action ->(request) { authenticate_request(request) }, only: [:index,:create, :update, :destroy]
   
   def index
-    user_id = authenticate_request(request) # Assign the value returned by authenticate_request to user_id
-      p"================"
+  # Assign the value returned by authenticate_request to user_id
+      p"=========check======="
       p user_id
       p"================"
     if user_id.nil?

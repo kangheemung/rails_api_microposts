@@ -1,6 +1,11 @@
 module JwtAuthenticator
     require 'jwt'
     require 'dotenv/load'
+    
+    def jwt_authenticate
+    　raise 'ヘッダーにjwtトークンがなかったら' unless request.headers[Authorization].present?
+    　raise 'ヘッダーが正しくないです。' unless request.headers[Authorization].split('').first == 'Bearer'
+    end
     def encode(user_id)
         expires_in = 1.day.from_now.to_i
         payload = {user_id: user_id, exp: expires_in}
@@ -11,26 +16,5 @@ module JwtAuthenticator
         decode_jwt = JWT.decode(token, ENV['JWT_SECRET'], true, {algorithm: 'HS256'})
         decode_jwt.first
     end
-    #トークンの作動方式に対する認証
-    def authenticate_request(request)
-      token = extract_token_from_request(request)
     
-      return nil unless token
-      
-      begin
-        decoded_token = decode(token)
-        user_id = decoded_token['user_id']
-        User.find_by(id: user_id) # Use find_by instead of find to return nil if user is not found
-      rescue JWT::DecodeError, ActiveRecord::RecordNotFound => e
-        nil
-      end
-    end
-    
-    
-      private
-      
-      def extract_token_from_request(request)
-        auth_header = request.headers['Authorization']
-        token = auth_header&.split(' ')&.last
-      end
 end
