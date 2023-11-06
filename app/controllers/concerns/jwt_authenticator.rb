@@ -3,8 +3,12 @@ module JwtAuthenticator
     require 'dotenv/load'
     
     def jwt_authenticate
-    　raise 'ヘッダーにjwtトークンがなかったら' unless request.headers[Authorization].present?
-    　raise 'ヘッダーが正しくないです。' unless request.headers[Authorization].split('').first == 'Bearer'
+        raise 'ヘッダーにjwtトークンがなかったら' unless request.headers['Authorization'].present?
+        raise 'ヘッダーが正しくないです。' unless request.headers['Authorization'].split(' ').first == 'Bearer'
+        token = request.headers['Authorization'].split(' ').last
+        decoded_token = decode(token)
+        @current_user = User.find_by(id: decoded_token['user_id'])
+      #raise 'ユーザーが存在しません'unless @current_user　
     end
     def encode(user_id)
         expires_in = 1.day.from_now.to_i

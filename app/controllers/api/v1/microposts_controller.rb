@@ -1,62 +1,43 @@
 class Api::V1::MicropostsController < ApplicationController
-  include JwtAuthenticator
-  skip_before_action :verify_authenticity_token
-  before_action ->(request) { authenticate_request(request) }, only: [:index,:create, :update, :destroy]
-  
-  def index
-  # Assign the value returned by authenticate_request to user_id
-      p"=========check======="
-      p user_id
-      p"================"
-    if user_id.nil?
-      render json: { status: 401, error: "Unauthorized" }
+def index
+  # jwt_authenticateを呼び出して認証する
+    jwt_authenticate
+    if @current_user.nil?
+    render json: { status: 401, error: "Unauthorized" }
       return
     end
-    token = encode(user_id) 
-    user = User.find_by(id: user_id)
+    token = encode(@current_user.id) # 正しいuser_idを使用する
+    user = User.find_by(id: @current_user.id)
     if user.nil?
       render json: { status: 404, error: "User not found" }
       return
     end
-    #posts =Post.limit(100)#≤ =データ多い時
-        #if posts.count > 0
-        #render json: {status: 201, data: posts }
-        #else
-        #render json:{status:400, error: "posts can't found"}
-        #end
-    #puts "user parameter check"
-    #puts params
+  
     page = params[:page].present? ? params[:page].to_i : 1
     per_page = 100
-
+  
     offset = (page - 1) * per_page
     microposts = Micropost.order(created_at: :desc).offset(offset).limit(per_page)
-
+  
     micropost_data = []
     microposts.each do |micropost|
       micropost_data << micropost.as_json(except: [:created_at, :updated_at])
     end
-
-    render json: micropost_data
   
-    end
+    render json: micropost_data
+  end
+
     def create
-      user_id = authenticate_request(request) # Assign the value returned by authenticate_request to user_id
-      p"================"
-      p user_id
-      p"================"
-      if user_id.nil?
+  # jwt_authenticateを呼び出して認証する
+      jwt_authenticate
+    
+      if @current_user.nil?
         render json: { status: 401, error: "Unauthorized" }
         return
       end
-      token = encode(user_id) # Use the correct user_id here
-      user = User.find_by(id: user_id)
-      if user.nil?
-        render json: { status: 404, error: "User not found" }
-        return
-      end
     
-      micropost = user.microposts.build(micropost_params)
+      token = encode(@current_user.id) # 正しいuser_idを使用する
+      micropost = @current_user.microposts.build(micropost_params)
     
       if micropost.save 
         render json: { status: 201, data: micropost, token: token }
@@ -64,19 +45,19 @@ class Api::V1::MicropostsController < ApplicationController
         render json: { status: 422, errors: micropost.errors.full_messages }
       end
     end
+
     def update
-      user_id = authenticate_request(request) # Assign the value returned by authenticate_request to user_id
-      p"================"
-      p user_id
-      p"================"
-      if user_id.nil?
+    # jwt_authenticateを呼び出して認証する
+      jwt_authenticate
+    
+      if @current_user.nil?
         render json: { status: 401, error: "Unauthorized" }
         return
       end
     
-      token = encode(user_id) # Use the correct user_id here
+      token = encode(@current_user.id) # 正しいuser_idを使用する
     
-      user = User.find_by(id: user_id)
+      user = User.find_by(id: params[:user_id])
       
       if user.nil?
         render json: { status: 404, error: "User not found" }
@@ -95,21 +76,18 @@ class Api::V1::MicropostsController < ApplicationController
           p"====================="
           render json:{status: 201,data: micropost,token: token }
         else
-          render json:{status: 400,error:"posts not update"}
+          render json:{status: 400,error: "posts not update"}
         end
     end
     def destroy
-      user_id = authenticate_request(request) # Assign the value returned by authenticate_request to user_id
-      p"================"
-      p user_id
-      p"================"
-      if user_id.nil?
+     # jwt_authenticateを呼び出して認証する
+      jwt_authenticate
+      if @current_user.nil?
         render json: { status: 401, error: "Unauthorized" }
         return
       end
-      token = encode(user_id) # Use the correct user_id here
-    
-      user = User.find_by(id: user_id)
+        token = encode(@current_user.id) # 正しいuser_idを使用する
+        user = User.find_by(id: params[:user_id])
       
       if user.nil?
         render json: { status: 404, error: "User not found" }
@@ -118,7 +96,7 @@ class Api::V1::MicropostsController < ApplicationController
         p"====================="
         p params
         p"====================="
-        micropost=Micropost.find_by(id:params[:id])
+        micropost=Micropost.find_by(id: params[:id])
         micropost.destroy
         render json: { message: 'Micropost deleted successfully' }
     end

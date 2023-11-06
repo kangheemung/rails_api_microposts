@@ -1,10 +1,11 @@
 class Api::V1::UsersController < ApplicationController
   include JwtAuthenticator
-  before_action :jwt_authenticate
+  skip_before_action :jwt_authenticate, only: [:create]
     def index
-      p"========= check request header ======="
-      p request.headers['Authorization']
-      p"===================================="
+
+      #p"========= check request header ======="
+      #p request.headers['Authorization']
+      #p"===================================="
       render json: {status: 200, data: User.all}
     end
     def create
