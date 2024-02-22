@@ -20,6 +20,7 @@ gem 'activerecord-import'
 # gem 'mini_magick', '~> 4.8'
 gem "jwt"
 gem 'dotenv-rails'
+gem 'active_model_serializers', '~> 0.10.0'
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
