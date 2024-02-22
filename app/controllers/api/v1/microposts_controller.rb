@@ -45,6 +45,24 @@ def index
         render json: { status: 422, errors: micropost.errors.full_messages }
       end
     end
+    def show
+      # Authentication is already handled by the before_action
+      if @current_user.nil?
+        render json: { status: 401, error: "Unauthorized" }
+        return
+      end
+  
+      token = encode(@current_user.id) # Encode the current user ID into the token
+  
+      micropost = @current_user.microposts.find_by(id: params[:id]) # Ensure the micropost belongs to the current user
+  
+      if micropost
+        render json: { status: 200, data: micropost, token: token }
+      else
+        render json: { status: 404, error: "Micropost not found" }
+      end
+    end
+
 
     def update
     # jwt_authenticateを呼び出して認証する
@@ -79,6 +97,26 @@ def index
           render json:{status: 400,error: "posts not update"}
         end
     end
+    
+    def edit
+       jwt_authenticate
+      # Authentication is already handled by the before_action
+      if @current_user.nil?
+        render json: { status: 401, error: "Unauthorized" }
+        return
+      end
+  
+      token = encode(@current_user.id) # Encode the current user ID into the token
+  
+      micropost = @current_user.microposts.find_by(id: params[:id]) # Ensure the micropost belongs to the current user
+  
+      if micropost
+        render json: { status: 200, data: micropost, token: token }
+      else
+        render json: { status: 404, error: "Micropost not found" }
+      end
+    end
+    
     def destroy
      # jwt_authenticateを呼び出して認証する
       jwt_authenticate
