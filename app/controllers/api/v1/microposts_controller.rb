@@ -1,31 +1,34 @@
 class Api::V1::MicropostsController < ApplicationController
-def index
-  # jwt_authenticateを呼び出して認証する
-    jwt_authenticate
-    if @current_user.nil?
-    render json: { status: 401, error: "Unauthorized" }
-      return
+  
+    def index
+      # Call jwt_authenticate to perform authentication
+      jwt_authenticate
+    
+      # If @current_user is nil, respond with Unauthorized
+      if @current_user.nil?
+        render json: { status: 401, error: "Unauthorized" } and return
+      end
+    
+      # If we have a current user, proceed to find microposts
+      user = User.find_by(id: @current_user.id)
+      
+      # If the user is not found, respond with User not found
+      if user.nil?
+        render json: { status: 404, error: "User not found" } and return
+      end
+      
+      # Pagination parameters
+      page = params[:page].present? ? params[:page].to_i : 1
+      per_page = 100
+      offset = (page - 1) * per_page
+      
+      # Retrieve paginated microposts
+      microposts = Micropost.order(created_at: :desc).offset(offset).limit(per_page)
+      
+      # Serialize microposts using the specified serializer
+      render json: microposts, each_serializer: MicropostSerializer
     end
-    token = encode(@current_user.id) # 正しいuser_idを使用する
-    user = User.find_by(id: @current_user.id)
-    if user.nil?
-      render json: { status: 404, error: "User not found" }
-      return
-    end
-  
-    page = params[:page].present? ? params[:page].to_i : 1
-    per_page = 100
-  
-    offset = (page - 1) * per_page
-    microposts = Micropost.order(created_at: :desc).offset(offset).limit(per_page)
-  
-    micropost_data = []
-    microposts.each do |micropost|
-      micropost_data << micropost.as_json(except: [:created_at, :updated_at])
-    end
-  
-    render json: micropost_data
-  end
+
 
     def create
   # jwt_authenticateを呼び出して認証する

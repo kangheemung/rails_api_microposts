@@ -21,7 +21,7 @@ class Api::V1::UsersController < ApplicationController
           p params
           p"==================="
           token = encode(user.id)
-          render json: {status: 201, data: {name: user.name, email: user.email, token: token}}
+          render json: {status: 201, data: {name: user.name, email: user.email, token: token}}, status: :created
         else
           p "error for user"
           p user.errors.full_messages

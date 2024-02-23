@@ -1,4 +1,4 @@
 class UserSerializer < ActiveModel::Serializer
-  attributes :id ,:name,:email,:password_digest
-  has_many:posts
+  attributes :id ,:name,:email
+  has_many:microposts
 end
