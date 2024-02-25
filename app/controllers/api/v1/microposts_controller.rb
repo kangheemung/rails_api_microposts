@@ -1,32 +1,39 @@
 class Api::V1::MicropostsController < ApplicationController
-  
+    
     def index
-      # Call jwt_authenticate to perform authentication
-      jwt_authenticate
-    
-      # If @current_user is nil, respond with Unauthorized
-      if @current_user.nil?
-        render json: { status: 401, error: "Unauthorized" } and return
-      end
-    
-      # If we have a current user, proceed to find microposts
-      user = User.find_by(id: @current_user.id)
+        jwt_authenticate
       
-      # If the user is not found, respond with User not found
-      if user.nil?
-        render json: { status: 404, error: "User not found" } and return
-      end
+        if @current_user.nil?
+          render json: { status: 401, error: "Unauthorized" }
+          return
+        end
       
-      # Pagination parameters
-      page = params[:page].present? ? params[:page].to_i : 1
-      per_page = 100
-      offset = (page - 1) * per_page
+        p "====================="
+        p params
+        p "====================="
       
-      # Retrieve paginated microposts
-      microposts = Micropost.order(created_at: :desc).offset(offset).limit(per_page)
+        token = encode(@current_user.id) 
+        microposts = @current_user.microposts.all
+        
+        p "====================="
+        p params
+        p "====================="
       
-      # Serialize microposts using the specified serializer
-      render json: microposts, each_serializer: MicropostSerializer
+        if microposts.exists?
+          user_details = {
+            id: @current_user.id,
+            name: @current_user.name,
+            email: @current_user.email
+          }
+          # Make sure to use the plural form 'microposts' here as well
+          render json: { status: 200, data: microposts, user: user_details, token: token }
+        else
+          render json: { status: 404, error: "Micropost not found" }
+        end
+      
+        p "====================="
+        p params
+        p "====================="
     end
 
 
@@ -48,6 +55,7 @@ class Api::V1::MicropostsController < ApplicationController
         render json: { status: 422, errors: micropost.errors.full_messages }
       end
     end
+    
     def show
       # Authentication is already handled by the before_action
       if @current_user.nil?
