@@ -1,41 +1,11 @@
 class Api::V1::MicropostsController < ApplicationController
+     
+    
     
     def index
-        jwt_authenticate
-      
-        if @current_user.nil?
-          render json: { status: 401, error: "Unauthorized" }
-          return
-        end
-      
-        p "====================="
-        p params
-        p "====================="
-      
-        token = encode(@current_user.id) 
-        microposts = @current_user.microposts.all
-        
-        p "====================="
-        p params
-        p "====================="
-      
-        if microposts.exists?
-          user_details = {
-            id: @current_user.id,
-            name: @current_user.name,
-            email: @current_user.email
-          }
-          # Make sure to use the plural form 'microposts' here as well
-          render json: { status: 200, data: microposts, user: user_details, token: token }
-        else
-          render json: { status: 404, error: "Micropost not found" }
-        end
-      
-        p "====================="
-        p params
-        p "====================="
+      microposts = Micropost.all.order(created_at: :desc)
+       render json: microposts
     end
-
 
     def create
   # jwt_authenticateを呼び出して認証する
@@ -57,6 +27,7 @@ class Api::V1::MicropostsController < ApplicationController
     end
     
     def show
+       jwt_authenticate
       # Authentication is already handled by the before_action
       if @current_user.nil?
         render json: { status: 401, error: "Unauthorized" }

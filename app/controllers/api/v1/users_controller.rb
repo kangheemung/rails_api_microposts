@@ -28,6 +28,30 @@ class Api::V1::UsersController < ApplicationController
           render json: {status: 400,error: "users can't save and create"}
         end
     end
+    
+  def show
+    jwt_authenticate
+
+    if @current_user.nil?
+      render json: { status: 401, error: "Unauthorized" }
+      return
+    end
+
+    microposts = @current_user.microposts.all
+
+    if microposts.exists?
+      user_details = {
+        id: @current_user.id,
+        name: @current_user.name,
+        email: @current_user.email
+      }
+      # No need to encode a new token for showing the microposts
+      render json: { status: 200, data: microposts, user: user_details }
+    else
+      render json: { status: 404, error: "Micropost not found" }
+    end
+  end
+
     def update
       if user=User.find_by(id: params[:id])
         p"==============save====="
