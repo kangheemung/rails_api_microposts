@@ -11,8 +11,6 @@ class Api::V1::AuthController < ApplicationController
    end
   end 
   def destroy
-    session[:user_id]= nil
-    flash[:notice]="ログアウトしました"
-    redirect_to root_path
+   render json: { status: 200, message: 'ログアウトしました。' }
   end 
 end

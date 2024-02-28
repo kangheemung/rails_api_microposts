@@ -1,6 +1,4 @@
 class Api::V1::MicropostsController < ApplicationController
-     
-    
     
     def index
       microposts = Micropost.all.order(created_at: :desc)

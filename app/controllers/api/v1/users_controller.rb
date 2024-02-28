@@ -8,6 +8,7 @@ class Api::V1::UsersController < ApplicationController
       #p"===================================="
       render json: {status: 200, data: User.all}
     end
+    
     def create
         user=User.new(user_params)
         p"=============new======"
@@ -29,28 +30,28 @@ class Api::V1::UsersController < ApplicationController
         end
     end
     
-  def show
-    jwt_authenticate
-
-    if @current_user.nil?
-      render json: { status: 401, error: "Unauthorized" }
-      return
+    def show
+      jwt_authenticate
+  
+      if @current_user.nil?
+        render json: { status: 401, error: "Unauthorized" }
+        return
+      end
+  
+      microposts = @current_user.microposts.all
+  
+      if microposts.exists?
+        user_details = {
+          id: @current_user.id,
+          name: @current_user.name,
+          email: @current_user.email
+        }
+        # No need to encode a new token for showing the microposts
+        render json: { status: 200, data: microposts, user: user_details }
+      else
+        render json: { status: 404, error: "Micropost not found" }
+      end
     end
-
-    microposts = @current_user.microposts.all
-
-    if microposts.exists?
-      user_details = {
-        id: @current_user.id,
-        name: @current_user.name,
-        email: @current_user.email
-      }
-      # No need to encode a new token for showing the microposts
-      render json: { status: 200, data: microposts, user: user_details }
-    else
-      render json: { status: 404, error: "Micropost not found" }
-    end
-  end
 
     def update
       if user=User.find_by(id: params[:id])
@@ -64,20 +65,10 @@ class Api::V1::UsersController < ApplicationController
         render json: {status: 400,error: "users can't update"}
       end
     end
+
     private
     def user_params
-      # params.require(:user).permit(:name, :email, :password, :password_confirmation)
-      # {
-      #   user: {
-      #     name: "test",
-      #     email: "test@test.com
-      #   }
-      # }
-      # {
-      #   name: "test",
-      #   
       params.require(:user).permit(:name, :email, :password, :password_confirmation)
     end
-    
 
 end
