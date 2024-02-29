@@ -36,12 +36,11 @@ class Api::V1::RelationshipsController < ApplicationController
     end
   # DELETE /users/:id/unfollow
   def unfollow
-    jwt_authenticate
-    return render json: { error: "Unauthorized" }, status: :unauthorized if @current_user.nil?
+      jwt_authenticate
+      return render json: { error: "Unauthorized" }, status: :unauthorized if @current_user.nil?
     
-    # Assuming that the 'follower_id' is the id of @current_user who wants to unfollow 'followed_id'.
-    relationship = Relationship.find_by(follower_id: @current_user.id, followed_id: relationship_params[:followed_id])
-    return render json: { error: 'Relationship not found' }, status: :not_found if relationship.nil?
+      relationship = Relationship.find_by(follower_id: @current_user.id, followed_id: params[:id])
+      return render json: { error: 'Relationship not found' }, status: :not_found if relationship.nil?
   
     if relationship.follower == @current_user
       if relationship.destroy
@@ -53,9 +52,9 @@ class Api::V1::RelationshipsController < ApplicationController
       render json: { error: 'You are not authorized to perform this action' }, status: :forbidden
     end
   end
+
   
   def relationship_params
-    params.require(:relationship).permit(:follower_id, :followed_id)
+    params.require(:relationship).permit(:followed_id)
   end
-
 end
