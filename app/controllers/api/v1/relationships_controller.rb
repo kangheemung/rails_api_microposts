@@ -1,6 +1,6 @@
 class Api::V1::RelationshipsController < ApplicationController
     
-    def create
+    def follow
         jwt_authenticate
         return render json: { status: :unauthorized, error: "Unauthorized" }, status: :unauthorized if @current_user.nil?
         token = encode(@current_user.id)
@@ -35,7 +35,7 @@ class Api::V1::RelationshipsController < ApplicationController
       render json: relationship, serializer: RelationshipSerializer
     end
   # DELETE /users/:id/unfollow
-  def destroy
+  def unfollow
     jwt_authenticate
     return render json: { error: "Unauthorized" }, status: :unauthorized if @current_user.nil?
     
@@ -57,5 +57,5 @@ class Api::V1::RelationshipsController < ApplicationController
   def relationship_params
     params.require(:relationship).permit(:follower_id, :followed_id)
   end
-    
+
 end
