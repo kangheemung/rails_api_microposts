@@ -1,3 +1,4 @@
+
 Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
@@ -5,18 +6,21 @@ Rails.application.routes.draw do
       delete 'auth' => 'auth#destroy'
 
       resources :users do
-        # Nested routes for microposts related to a user
-        resources :microposts, except: [:index]
+        resources :microposts, only: [:index] do
+          member do
+            post 'likes', to: 'likes#create' , only: [:create]
+          end
+        end
 
-        # Member routes for follow and unfollow actions
+        # User-specific member actions
         member do
           post 'follow', to: 'relationships#follow'
           delete 'unfollow', to: 'relationships#unfollow'
         end
+        
+        # Separate index route for microposts if needed
+        get 'microposts', to: 'microposts#index'
       end
-
-      # Define the index route for microposts separately
-      get 'microposts', to: 'microposts#index'
     end
   end
 end
