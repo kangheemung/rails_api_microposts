@@ -20,7 +20,7 @@ class Api::V1::LikesController < ApplicationController
     end
   end
   
-   def destroy
+  def destroy
     jwt_authenticate
     return render json: { status: :unauthorized, error: "Unauthorized" }, status: :unauthorized if @current_user.nil?
 
