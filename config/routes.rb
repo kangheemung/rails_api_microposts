@@ -11,6 +11,7 @@ Rails.application.routes.draw do
         resources :microposts, except: [:new, :edit] do
           member do
             post 'likes', to: 'likes#create'
+            delete 'likes', to: 'likes#destroy'
           end
         end
 

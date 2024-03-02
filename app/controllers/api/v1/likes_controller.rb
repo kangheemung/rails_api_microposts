@@ -4,14 +4,19 @@ class Api::V1::LikesController < ApplicationController
   def create
     jwt_authenticate
     return render json: { status: :unauthorized, error: "Unauthorized" }, status: :unauthorized if @current_user.nil?
-
+  
     if @micropost.user_id == @current_user.id
       return render json: { error: "You cannot like your own post." }, status: :unprocessable_entity
     end
-
-   
+  
+    # Check if the like already exists
+    existing_like = @current_user.likes.find_by(micropost: @micropost)
+    if existing_like
+      return render json: { error: "You have already liked this post." }, status: :unprocessable_entity
+    end
+  
     like = @current_user.likes.build(micropost: @micropost)
-
+  
     if like.save
       render json: like, status: :created
     else
