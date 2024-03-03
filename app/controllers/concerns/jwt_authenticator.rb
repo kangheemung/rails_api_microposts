@@ -11,8 +11,14 @@ module JwtAuthenticator
       #raise 'ユーザーが存在しません'unless @current_user　
     end
     def encode(user_id)
+         user = User.find_by(id: user_id)
+         raise 'User not found' if user.nil?
         expires_in = 1.day.from_now.to_i
-        payload = {user_id: user_id, exp: expires_in}
+        payload = {user_id: user_id,
+                    name: user.name,
+                    exp: expires_in
+            
+        }
         JWT.encode(payload, ENV['JWT_SECRET'], 'HS256')
     end
 
