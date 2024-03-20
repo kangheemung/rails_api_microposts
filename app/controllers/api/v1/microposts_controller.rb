@@ -106,25 +106,19 @@ class Api::V1::MicropostsController < ApplicationController
     end
     
     def destroy
-     # jwt_authenticateを呼び出して認証する
       jwt_authenticate
       if @current_user.nil?
-        render json: { status: 401, error: "Unauthorized" }
-        return
+      render json: { status: 401, error: "Unauthorized" }
+      return
       end
-        token = encode(@current_user.id) # 正しいuser_idを使用する
-        user = User.find_by(id: params[:user_id])
       
-      if user.nil?
-        render json: { status: 404, error: "User not found" }
-        return
+      micropost = @current_user.microposts.find_by(id: params[:id]) # Change here to scope to the current user's posts
+      if micropost.nil?
+      render json: { status: 404, error: "Micropost not found" }
+      return
       end
-        p"====================="
-        p params
-        p"====================="
-        micropost=Micropost.find_by(id: params[:id])
-        micropost.destroy
-        render json: { message: 'Micropost deleted successfully' }
+      micropost.destroy
+      render json: { message: 'Micropost deleted successfully' }, status: :ok
     end
   
     private
