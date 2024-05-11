@@ -11,6 +11,7 @@ class User < ApplicationRecord
   has_many :likes
   has_many :liked_microposts, through: :likes, source: :micropost
   
+  validates :email, presence: true, uniqueness: true
   # Follow a user
   def follow(user_id)
     active_relationships.create(followed_id: user_id)
