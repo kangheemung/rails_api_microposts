@@ -5,10 +5,10 @@ Rails.application.routes.draw do
       delete 'auth' => 'auth#destroy'
 
       # If you want a route to list all microposts, add this line:
-      resources :microposts, only: [:index]
+      resources :microposts, only: [:index, :show]
 
       resources :users do
-        resources :microposts, except: [:new, :edit] do
+        resources :microposts, except: [:new,:show,:edit] do
           member do
             post 'likes', to: 'likes#create'
             delete 'likes', to: 'likes#destroy'
