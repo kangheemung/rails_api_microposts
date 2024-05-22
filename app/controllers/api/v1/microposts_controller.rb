@@ -41,7 +41,7 @@ class Api::V1::MicropostsController < ApplicationController
     
       token = encode(@current_user.id) # Encode the current user ID into the token
     
-      micropost = @current_user.microposts.find_by(id: params[:id]) # Ensure the micropost belongs to the current user
+        micropost = Micropost.find_by(id: params[:id])# Ensure the micropost belongs to the current user
     
       if micropost
         render json: { status: 200, data: micropost,  user_name: @current_user.name,token: token }
@@ -125,7 +125,7 @@ class Api::V1::MicropostsController < ApplicationController
   
     def micropost_params
       params.require(:micropost).permit(:title, :body, :user_id)
-                                .merge(title: params[:micropost][:title].truncate(15), body: params[:micropost][:body].truncate(100))
+                                
     end
     def user_details(user_id)
       user = User.find(user_id)
