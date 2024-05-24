@@ -43,7 +43,8 @@ class Api::V1::LikesController < ApplicationController
   private
 
   def set_micropost
-    @micropost = Micropost.find_by(id: params[:micropost_id])
+    @micropost = Micropost.find_by(id: params[:id])
     render json: { error: "Micropost not found." }, status: :not_found if @micropost.nil?
   end
+
 end
