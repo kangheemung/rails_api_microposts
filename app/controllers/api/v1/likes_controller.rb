@@ -17,7 +17,7 @@ class Api::V1::LikesController < ApplicationController
     like = @current_user.likes.build(micropost: @micropost)
     
     if like.save
-      render json: like, status: :created
+     render json: { like: { user_id: like.user_id, micropost_id: like.micropost_id } }, status: :created
     else
       Rails.logger.info like.errors.full_messages.to_sentence
       render json: { error: like.errors.full_messages.to_sentence }, status: :unprocessable_entity
