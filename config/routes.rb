@@ -4,7 +4,7 @@ Rails.application.routes.draw do
       post 'auth' => 'auth#create'
       delete 'auth' => 'auth#destroy'
        resources :users do
-        resources :microposts, except: [:new,:show,:edit] do
+        resources :microposts, except: [:new,:edit] do
           member do
             post 'like', to: 'likes#create'
             delete 'unlike', to: 'likes#destroy'
@@ -18,4 +18,6 @@ Rails.application.routes.draw do
       end
     end
   end
+    get 'api/v1/users/:user_id/microposts/:id', to: 'api/v1/microposts#show'
+    get 'api/v1/users/:user_id/microposts/:id/edit', to: 'api/v1/microposts#edit'
 end
