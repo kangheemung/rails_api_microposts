@@ -1,42 +1,46 @@
 class Api::V1::LikesController < ApplicationController
   before_action :set_micropost, only: [:create, :destroy]
-  
+
   def create
     jwt_authenticate
-    return render json: { status: :unauthorized, error: "Unauthorized" }, status: :unauthorized if @current_user.nil?
-    
+    return render_unauthorized if @current_user.nil?
+  
     if @micropost.user_id == @current_user.id
       return render json: { error: "You cannot like your own post." }, status: :unprocessable_entity
     end
-    
+  
     existing_like = @current_user.likes.find_by(micropost: @micropost)
     if existing_like
       return render json: { error: "You have already liked this post." }, status: :unprocessable_entity
     end
-    
+  
     like = @current_user.likes.build(micropost: @micropost)
-    
+  
     if like.save
-     render json: { like: { user_id: like.user_id, micropost_id: like.micropost_id } }, status: :created
+      render json: like, serializer: LikeSerializer, status: :created
     else
-      Rails.logger.info like.errors.full_messages.to_sentence
-      render json: { error: like.errors.full_messages.to_sentence }, status: :unprocessable_entity
+      render_error(like.errors.full_messages.to_sentence, :unprocessable_entity)
+    end
+    
+    ## Add this check to handle serialization of null values ##
+    if like.nil?
+      render json: {}, status: :no_content
     end
   end
-  
+
+
   def destroy
     jwt_authenticate
-    return render json: { status: :unauthorized, error: "Unauthorized" }, status: :unauthorized if @current_user.nil?
+    return render_unauthorized if @current_user.nil?
 
     like = @current_user.likes.find_by(micropost: @micropost)
-    
+
     if like.nil?
       render json: { error: "Like not found." }, status: :not_found
     elsif like.destroy
-      render json: {}, status: :no_content
+      head :no_content
     else
-      Rails.logger.info like.errors.full_messages.to_sentence
-      render json: { error: like.errors.full_messages.to_sentence }, status: :unprocessable_entity
+      render_error(like.errors.full_messages.to_sentence, :unprocessable_entity)
     end
   end
 
@@ -44,7 +48,16 @@ class Api::V1::LikesController < ApplicationController
 
   def set_micropost
     @micropost = Micropost.find_by(id: params[:id])
-    render json: { error: "Micropost not found." }, status: :not_found if @micropost.nil?
+    rescue ActiveRecord::RecordNotFound
+    render json: { error: 'Micropost not found' }, status: :not_found
   end
 
+  def render_unauthorized
+    render json: { status: :unauthorized, error: "Unauthorized" }, status: :unauthorized
+  end
+
+  def render_error(message, status)
+    Rails.logger.info message
+    render json: { error: message }, status: status
+  end
 end
