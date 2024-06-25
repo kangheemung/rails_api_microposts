@@ -16,7 +16,7 @@ class Api::V1::LikesController < ApplicationController
       return render json: { error: "You cannot like your own micropost" }, status: :unprocessable_entity
     end
     
-    like = current_user.likes.create(micropost_id: params[:id])
+    like = @current_user.likes.create(micropost_id: params[:id])
     
     if like.save
       token = encode(@current_user.id)
@@ -35,7 +35,7 @@ class Api::V1::LikesController < ApplicationController
     if @micropost.nil? 
       render json: { error: "Micropost not found" }, status: :not_found
     else
-      @like = Like.find_by(micropost_id: params[:id], user_id: current_user.id)
+      @like = Like.find_by(micropost_id: params[:id], user_id: @current_user.id)
       @like.destroy
       render json: { message: 'Like destroyed successfully' }
     end
