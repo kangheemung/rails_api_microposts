@@ -1,54 +1,51 @@
 class Api::V1::LikesController < ApplicationController
   before_action :set_micropost, only: [:create, :destroy]
-  
+
   def create
     jwt_authenticate
     return render_unauthorized if @current_user.nil?
     
-    @micropost = Micropost.find_by(id: params[:micropost_id])
+    token = encode(@current_user.id)
+    @micropost = Micropost.find_by(id: params[:id])
     
     if @micropost.nil?
       return render json: { error: "Micropost not found" }, status: :not_found
     end
     
-    existing_like = Like.find_by(user_id: @current_user.id, micropost_id: @micropost.id)
-  
-    if existing_like
-      return render json: { message: "You have already liked this post.", like: existing_like }, status: :ok
+    if @current_user.id == @micropost.user_id
+      return render json: { error: "You cannot like your own micropost" }, status: :unprocessable_entity
     end
-  
-    like = Like.new(user: @current_user, micropost: @micropost)
-  
+    
+    like = current_user.likes.create(micropost_id: params[:id])
+    
     if like.save
+      token = encode(@current_user.id)
       render json: like, serializer: LikeSerializer, status: :created, meta: { token: token }
     else
-      render_error(like.errors.full_messages.to_sentence, :unprocessable_entity)
+      render json: { error: like.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
   end
-
-
+  
   def destroy
     jwt_authenticate
     return render_unauthorized if @current_user.nil?
 
-    like = @current_user.likes.find_by(micropost_id: params[:id])
-
-    if like.nil?
-      render json: { error: "Like not found." }, status: :not_found
-    elsif like.destroy
-      head :no_content
+    @micropost = Micropost.find_by(id: params[:id])
+    
+    if @micropost.nil? 
+      render json: { error: "Micropost not found" }, status: :not_found
     else
-      render_error(like.errors.full_messages.to_sentence, :unprocessable_entity)
+      @like = Like.find_by(micropost_id: params[:id], user_id: current_user.id)
+      @like.destroy
+      render json: { message: 'Like destroyed successfully' }
     end
   end
 
   private
 
   def set_micropost
-    @micropost = Micropost.find_by(id: params[:id])
-    if @micropost.nil?
-      render json: { error: 'Micropost not found' }, status: :not_found
-      return
-    end
+    @micropost = Micropost.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'Micropost not found' }, status: :not_found
   end
 end
