@@ -1,5 +1,6 @@
 class Api::V1::LikesController < ApplicationController
   before_action :set_micropost, only: [:create, :destroy]
+  before_action :jwt_authenticate, only: [:create]
 
   def create
     jwt_authenticate
@@ -36,11 +37,14 @@ class Api::V1::LikesController < ApplicationController
       render json: { error: "Micropost not found" }, status: :not_found
     else
       @like = Like.find_by(micropost_id: params[:id], user_id: @current_user.id)
-      @like.destroy
-      render json: { message: 'Like destroyed successfully' }
-    end
+      if @like.nil?
+        render json: { error: 'Like not found' }, status: :not_found
+      else
+        @like.destroy
+        render json: { message: 'Like destroyed successfully' }
+      end
   end
-
+end
   private
 
   def set_micropost
