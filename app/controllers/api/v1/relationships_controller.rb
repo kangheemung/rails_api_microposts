@@ -20,10 +20,7 @@ class Api::V1::RelationshipsController < ApplicationController
       end
     end
 
-  def show_relationship
-    relationship = Relationship.find(params[:id])
-    render json: relationship, serializer: RelationshipSerializer
-  end
+
 
   def unfollow
     jwt_authenticate
