@@ -1,27 +1,38 @@
 class Api::V1::MicropostsController < ApplicationController
-  
   before_action :jwt_authenticate, only: [:create]
-  def index
-  # Retrieve all microposts ordered by created_at
-    microposts = Micropost.all.order(created_at: :desc).map do |micropost|
-      {
-        id: micropost.id,
-        title: micropost.title,
-        body: micropost.body,
-        user_id: micropost.user_id, 
-        name: micropost.user.name,
-        created_at: micropost.created_at,
-        updated_at: micropost.updated_at,
-        liked_by_current_user: @current_user.like_ids.include?(micropost.id),
-        followed_by_current_user: @current_user.following?(micropost.user) || micropost.user.following?(@current_user)
-      }
+    def index
+      jwt_authenticate
+    
+      if @current_user.nil?
+        render json: { status: 401, error: "Unauthorized" }
+        return
+      end
+    
+      token = encode(@current_user.id)
+    
+      microposts = Micropost.includes(:likes, :user).order(created_at: :desc)
+      followed_users_ids = @current_user.following.ids
+    
+      microposts_data = microposts.map do |micropost|
+         liked_by_current_user = micropost.likes.exists?(user_id: @current_user.id)
+        {
+          id: micropost.id,
+          body: micropost.body,
+          user_id: micropost.user_id,
+          name: micropost.user.name,
+          likes_count: micropost.likes.count,
+          liked_by_current_user: micropost.likes.exists?(user_id: @current_user.id),
+          user: {
+            id: micropost.user.id,
+            name: micropost.user.name,
+            following: @current_user.following?(micropost.user),
+            followed: followed_users_ids.include?(micropost.user.id) # Corrected the syntax error here
+          }
+        }
+      end
+    
+      render json: { data: microposts_data, token: token }
     end
-  
-    render json: { data: microposts }
-  end
-
-
-
 
 
 
