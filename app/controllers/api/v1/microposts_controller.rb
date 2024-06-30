@@ -1,9 +1,28 @@
 class Api::V1::MicropostsController < ApplicationController
     
-    def index
-      microposts = Micropost.all.order(created_at: :desc)
-       render json: microposts
+  def index
+  # Retrieve all microposts ordered by created_at
+    microposts = Micropost.all.order(created_at: :desc).map do |micropost|
+      {
+        id: micropost.id,
+        title: micropost.title,
+        body: micropost.body,
+        user_id: micropost.user_id, 
+        name: micropost.user.name,
+        created_at: micropost.created_at,
+        updated_at: micropost.updated_at,
+        liked_by_current_user: @current_user.like_ids.include?(micropost.id),
+        followed_by_current_user: @current_user.follower_ids.include?(micropost.user_id)
+      }
     end
+  
+    render json: { data: microposts }
+  end
+
+
+
+
+
 
     def create
     # jwt_authenticateを呼び出して認証する
