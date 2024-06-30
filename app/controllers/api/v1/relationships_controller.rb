@@ -1,5 +1,6 @@
 class Api::V1::RelationshipsController < ApplicationController
-    
+  before_action :set_micropost, only: [:create, :destroy]
+  before_action :jwt_authenticate, only: [:create]
   def follow
     jwt_authenticate
     return render json: { status: :unauthorized, error: "Unauthorized" }, status: :unauthorized if @current_user.nil?

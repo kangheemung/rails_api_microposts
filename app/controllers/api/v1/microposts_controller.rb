@@ -1,5 +1,6 @@
 class Api::V1::MicropostsController < ApplicationController
-    
+  
+  before_action :jwt_authenticate, only: [:create]
   def index
   # Retrieve all microposts ordered by created_at
     microposts = Micropost.all.order(created_at: :desc).map do |micropost|
@@ -12,7 +13,7 @@ class Api::V1::MicropostsController < ApplicationController
         created_at: micropost.created_at,
         updated_at: micropost.updated_at,
         liked_by_current_user: @current_user.like_ids.include?(micropost.id),
-        followed_by_current_user: @current_user.follower_ids.include?(micropost.user_id)
+        followed_by_current_user: @current_user.following?(micropost.user) || micropost.user.following?(@current_user)
       }
     end
   
