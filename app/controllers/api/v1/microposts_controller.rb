@@ -11,28 +11,27 @@ class Api::V1::MicropostsController < ApplicationController
       token = encode(@current_user.id)
     
       microposts = Micropost.includes(:likes, :user).order(created_at: :desc)
-      followed_users_ids = @current_user.following.ids
     
       microposts_data = microposts.map do |micropost|
-         liked_by_current_user = micropost.likes.exists?(user_id: @current_user.id)
+        liked_by_current_user = micropost.likes.exists?(user_id: @current_user.id)
+        followed_by_current_user = User.find(micropost.user_id).followers.exists?(@current_user.id)
+
+
+
+    
         {
           id: micropost.id,
           body: micropost.body,
           user_id: micropost.user_id,
           name: micropost.user.name,
-          likes_count: micropost.likes.count,
-          liked_by_current_user: micropost.likes.exists?(user_id: @current_user.id),
-          user: {
-            id: micropost.user.id,
-            name: micropost.user.name,
-            following: @current_user.following?(micropost.user),
-      
-          }
+          liked_by_current_user: liked_by_current_user,
+          followed_by_current_user: followed_by_current_user
         }
       end
     
       render json: { data: microposts_data, token: token }
     end
+
 
 
 
