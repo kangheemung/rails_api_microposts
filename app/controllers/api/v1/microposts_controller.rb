@@ -26,7 +26,7 @@ class Api::V1::MicropostsController < ApplicationController
             id: micropost.user.id,
             name: micropost.user.name,
             following: @current_user.following?(micropost.user),
-            followed: followed_users_ids.include?(micropost.user.id) # Corrected the syntax error here
+      
           }
         }
       end
